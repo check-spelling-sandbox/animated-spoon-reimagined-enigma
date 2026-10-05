@@ -1,6 +1,8 @@
 github
 https
+jsoref
 passthrough
+Soref
 ssh
 ubuntu
 workarounds
