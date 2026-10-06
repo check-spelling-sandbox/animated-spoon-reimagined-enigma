@@ -66,6 +66,7 @@ on:
       - 'opened'
       - 'reopened'
       - 'synchronize'
+  merge_group:
   issue_comment:
     types:
       - 'created'
