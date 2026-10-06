@@ -1,0 +1,59 @@
+name: Check Spelling
+
+# Comment management is handled through a secondary job, for details see:
+# https://docs.check-spelling.dev/Feature:-Restricted-Permissions
+#
+# Note that jobs.spelling.name here must match an entry in on.workflow_run.workflows[] there.
+
+# Updating pull request branches is managed via comment handling.
+# For details, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-Update-expect-list
+#
+# These elements work together to make it happen:
+#
+# `on.issue_comment`
+#   This event listens to comments by users asking to update the metadata.
+#
+# `jobs.update`
+#   This job runs in response to an issue_comment and will push a new commit
+#   to update the spelling metadata.
+#
+# `with.experimental_apply_changes_via_bot`
+#   Tells the action to support and generate messages that enable it
+#   to make a commit to update the spelling metadata.
+#
+# `with.ssh_key`
+#   In order to trigger workflows when the commit is made, you can provide a
+#   secret (typically, a write-enabled github deploy key).
+#
+#   For background, see: https://github.com/check-spelling/check-spelling/wiki/Feature:-Update-with-deploy-key
+
+# on.pull_request(_target).edited is only needed for with.check_commit_messages: title | description
+
+on:
+  issue_comment:
+    types:
+      - 'created'
+
+permissions: {}
+
+jobs:
+  update:
+    name: Update PR
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    runs-on: ubuntu-slim
+    if: ${{
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@check-spelling-bot') &&
+      contains(github.event.comment.body, 'apply') &&
+      contains(github.event.comment.body, 'https://')
+      }}
+    steps:
+      - name: apply spelling updates
+        uses: check-spelling/check-spelling@prerelease
+        with:
+          experimental_apply_changes_via_bot: 1
+          checkout: true
+          ssh_key: '${{ secrets.CHECK_SPELLING }}'

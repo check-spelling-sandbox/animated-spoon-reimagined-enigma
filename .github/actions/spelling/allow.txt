@@ -6,3 +6,4 @@ Soref
 ssh
 ubuntu
 workarounds
+yml
